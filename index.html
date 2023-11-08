@@ -3,9 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Bedtime Story Generator</title>
 </head>
-<body>
-    <h1>Godnat Historie Generator</h1>
+<body class="bg-gray-100 font-poppins">
+    
+    <div style="display: flex; justify-content: space-evenly;">
+
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-semibold text-center my-4">Bedtime Story Generator</h1>
+        <form class="max-w-md mx-auto">
+            <div class="mb-4">
+                <label for="childName" class="block font-medium">Barnets navn:</label>
+                <input type="text" id="childName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div class="mb-4">
+                <label for="childAge" class="block font-medium">Alder:</label>
+                <input type="text" id="childAge" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">                  
+            </div>
+
+            <div class="mb-4">
+                <label for="childInterests" class="block font-medium">Interesser (kommasepareret):</label>
+                <input type="text" id="childInterests" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div class="mb-4">
+                <label for="childFriends" class="block font-medium">Venner:</label>
+                <input type="text" id="childFriends" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+
+            <div class="mb-4">
+                <label for="childParents" class="block font-medium">Forældre:</label>
+                <input type="text" id="childParents" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
+            </div>
+
+            <button type="button" onclick="generateBedtimeStory()" class="w-full py-2 px-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out">Generate Bedtime Story</button>
+        </form>
+
+      
+    </div>
+
+    
+    <div class="container mx-auto p-4" style="margin: 10px; background: white; border: 1px solid black; border-radius: 5px; max-height: 95vh; overflow: auto;">
+        <div id="loadingSpinner" class="fixed top-0 left-0 w-screen h-screen flex justify-center items-center bg-gray-700 bg-opacity-50 z-50 invisible">
+            <div class="animate-spin rounded-full h-20 w-20 border-t-2 border-b-2 border-blue-500"></div>
+            <p>...Loading story..</p>
+        </div>        
+        <div id="bedtimeStory" class="mt-8 text-lg"><p style="margin: 10px; font-size: larger;">Story will be generated here..</p></div>
+    </div>
+
+</div>
+
+    <script>
+       function showLoadingSpinner() {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    loadingSpinner.classList.remove('invisible');
+}
+
+function hideLoadingSpinner() {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    loadingSpinner.classList.add('invisible');
+}
+
+function generateBedtimeStory() {
+    showLoadingSpinner(); // Show the loading spinner
+
+    const childName = document.getElementById('childName').value;
+    const childAge = document.getElementById('childAge').value;
+    const childInterests = document.getElementById('childInterests').value.split(',').map(interest => interest.trim());
+    const childFriends = document.getElementById('childFriends').value;
+    const childParents = document.getElementById('childParents').value;
+
+    // Make a request to the API to get the bedtime story
+    fetch(`http://localhost:8080/api/joke?about=${childName},age=${childAge},interests=${childInterests.join(',')},friends=${childFriends}&parents=${childParents}`)
+        .then(response => response.json())
+        .then(data => {
+            const bedtimeStory = data.answer;
+
+            // Display the generated bedtime story
+            const bedtimeStoryDisplay = document.getElementById('bedtimeStory');
+            bedtimeStoryDisplay.innerHTML = `<p>${bedtimeStory}</p>`;
+
+            hideLoadingSpinner(); // Hide the loading spinner once the data is loaded
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            hideLoadingSpinner(); // Hide the loading spinner in case of an error
+        });
+}
+
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </body>
 </html>
+
+
+
