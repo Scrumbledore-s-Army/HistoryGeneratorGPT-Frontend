@@ -1,102 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <!-- Meta tags for character set and viewport -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <title>Bedtime Story Generator</title>
+    <!-- Title of the webpage -->
+    <title>The Enchanted Garden Story</title>
 </head>
-<body class="bg-gray-100 font-poppins">
-    
-    <div style="display: flex; justify-content: space-evenly;">
 
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-semibold text-center my-4">Bedtime Story Generator</h1>
-        <form class="max-w-md mx-auto">
-            <div class="mb-4">
-                <label for="childName" class="block font-medium">Barnets navn:</label>
-                <input type="text" id="childName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            </div>
+<body>
+    <!-- Main content -->
+    <h1>Generer historie!</h1>
 
-            <div class="mb-4">
-                <label for="childAge" class="block font-medium">Alder:</label>
-                <input type="text" id="childAge" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">                  
-            </div>
-
-            <div class="mb-4">
-                <label for="childInterests" class="block font-medium">Interesser (kommasepareret):</label>
-                <input type="text" id="childInterests" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div class="mb-4">
-                <label for="childFriends" class="block font-medium">Venner:</label>
-                <input type="text" id="childFriends" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            </div>
-
-            <div class="mb-4">
-                <label for="childParents" class="block font-medium">Forældre:</label>
-                <input type="text" id="childParents" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500">
-            </div>
-
-            <button type="button" onclick="generateBedtimeStory()" class="w-full py-2 px-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out">Generate Bedtime Story</button>
-        </form>
-
-      
-    </div>
-
-    
-    <div class="container mx-auto p-4" style="margin: 10px; background: white; border: 1px solid black; border-radius: 5px; max-height: 95vh; overflow: auto;">
-        <div id="loadingSpinner" class="fixed top-0 left-0 w-screen h-screen flex justify-center items-center bg-gray-700 bg-opacity-50 z-50 invisible">
-            <div class="animate-spin rounded-full h-20 w-20 border-t-2 border-b-2 border-blue-500"></div>
-            <p>...Loading story..</p>
-        </div>        
-        <div id="bedtimeStory" class="mt-8 text-lg"><p style="margin: 10px; font-size: larger;">Story will be generated here..</p></div>
-    </div>
-
-</div>
+    <!-- Input for user to provide a parameter for story generation -->
+    <label for="about">About: </label>
+    <input type="text" id="about">
+    <!-- Button to initiate the story fetching process -->
+    <button id="fetchButton">Fetch Story</button>
+    <!-- Container for displaying the generated story -->
+    <div id="result"></div>
 
     <script>
-       function showLoadingSpinner() {
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    loadingSpinner.classList.remove('invisible');
-}
+        // Variable to store the fetched story text
+        let text = "";
 
-function hideLoadingSpinner() {
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    loadingSpinner.classList.add('invisible');
-}
+        // DOM elements for interaction
+        const fetchButton = document.getElementById('fetchButton');
+        const aboutInput = document.getElementById('about');
+        const resultDiv = document.getElementById('result');
 
-function generateBedtimeStory() {
-    showLoadingSpinner(); // Show the loading spinner
+        // Event listener for the fetch button
+        fetchButton.addEventListener('click', () => {
+            // Get the value from the "about" input
+            const aboutValue = aboutInput.value;
 
-    const childName = document.getElementById('childName').value;
-    const childAge = document.getElementById('childAge').value;
-    const childInterests = document.getElementById('childInterests').value.split(',').map(interest => interest.trim());
-    const childFriends = document.getElementById('childFriends').value;
-    const childParents = document.getElementById('childParents').value;
+            // Check if a value is provided
+            if (!aboutValue) {
+                resultDiv.innerHTML = 'Please enter a value for the "about" parameter.';
+                return;
+            }
 
-    // Make a request to the API to get the bedtime story
-    fetch(`http://localhost:8080/api/joke?about=${childName},age=${childAge},interests=${childInterests.join(',')},friends=${childFriends}&parents=${childParents}`)
-        .then(response => response.json())
-        .then(data => {
-            const bedtimeStory = data.answer;
+            // Construct the URL for fetching the story based on the input
+            const apiUrl = `http://localhost:8080/api/story?about=${aboutValue}`;
 
-            // Display the generated bedtime story
-            const bedtimeStoryDisplay = document.getElementById('bedtimeStory');
-            bedtimeStoryDisplay.innerHTML = `<p>${bedtimeStory}</p>`;
-
-            hideLoadingSpinner(); // Hide the loading spinner once the data is loaded
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            hideLoadingSpinner(); // Hide the loading spinner in case of an error
+            // Fetch the story from the API
+            fetch(apiUrl)
+                .then(response => {
+                    // Check if the network response is successful
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    // Store the fetched story text and generate the story
+                    text = data;
+                    generateStory();
+                })
+                .catch(error => {
+                    // Handle errors during the fetch process
+                    resultDiv.innerHTML = `Error: ${error.message}`;
+                });
         });
-}
 
+        // Function to generate the story HTML based on the fetched text
+        async function generateStory() {
+            // Split the story text into parts based on specific patterns
+            const parts = text.split(/\s*(?=\[[^\]]*\])\s*/);
+            let html = '';
+
+            let currentChapter = null;
+
+            // Iterate through the parts to create HTML structure
+            for (const part of parts) {
+                const match = part.match(/\[([A-Z-]+):\s*(.*?)\]/);
+                if (match) {
+                    const key = match[1];
+                    const value = match[2];
+
+                    // Handle different types of story elements
+                    if (key === 'CHAPTER-NUMBER') {
+                        // Start a new chapter div
+                        if (currentChapter) {
+                            html += '</div>';
+                        }
+                        html += `<div class="chapter"><h2>${value}</h2>`;
+                        currentChapter = value;
+                    } else if (key === 'CHAPTER-TITLE') {
+                        // Add chapter title
+                        html += `<h3>${value}</h3>`;
+                    } else if (key === 'CHAPTER-TEXT') {
+                        // Add chapter text
+                        html += `<p>${value}</p>`;
+                    } else if (key === 'CHAPTER-IMAGE-PROMPT') {
+                        // Fetch and add an image based on the prompt
+                        const imageUrl = await getImageUrl(value);
+                        if (imageUrl) {
+                            console.log('Image URL:', imageUrl);
+                            html += `<img style="max-height: 80vh" src="${imageUrl}">`;
+                        } else {
+                            console.log('Failed to retrieve image URL.');
+                        }
+                    }
+                }
+            }
+
+            // Close the last chapter div if it exists
+            if (currentChapter) {
+                html += '</div>';
+            }
+
+            // Display the generated story on the webpage
+            resultDiv.innerHTML = html;
+        }
+
+        // Function to fetch an image URL based on a given prompt
+        async function getImageUrl(prompt) {
+            // URL for the image generation API
+            const baseUrl = 'http://localhost:8080/api/image/generateimage';
+            const fullUrl = `${baseUrl}?prompt=${encodeURIComponent(prompt)}`;
+
+            try {
+                // Fetch the image URL
+                const response = await fetch(fullUrl);
+
+                if (response.ok) {
+                    // Return the fetched image URL
+                    const imageUrl = await response.text();
+                    return imageUrl;
+                } else {
+                    // Handle errors in the response
+                    console.error(`Error: ${response.status} - ${response.statusText}`);
+                    return null;
+                }
+            } catch (error) {
+                // Handle fetch errors
+                console.error('Error:', error.message);
+                return null;
+            }
+        }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
 </body>
+
 </html>
-
-
-
