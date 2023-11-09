@@ -85,20 +85,26 @@
                         if (currentChapter) {
                             html += '</div>';
                         }
-                        html += `<div class="chapter"><h2>${value}</h2>`;
+                        html += `<div class="chapter">`;
+
+                        html += '<div style="display: flex; justify-content: space-evenly;">'  
+                        html += '<div style="display: flex; flex-direction: column">'      
+                        html += `<h1 style="text-align: center;">Kapitel ${value}</h1>`
                         currentChapter = value;
                     } else if (key === 'CHAPTER-TITLE') {
                         // Add chapter title
-                        html += `<h3>${value}</h3>`;
+                        html += `<h1 style="text-align: center;">${value}</h1>`;
                     } else if (key === 'CHAPTER-TEXT') {
                         // Add chapter text
-                        html += `<p>${value}</p>`;
+                        html += `<p style="font-size: 25px; font-weight: bold;">${value}</p>`;
                     } else if (key === 'CHAPTER-IMAGE-PROMPT') {
                         // Fetch and add an image based on the prompt
                         const imageUrl = await getImageUrl(value);
                         if (imageUrl) {
                             console.log('Image URL:', imageUrl);
-                            html += `<img style="max-height: 80vh" src="${imageUrl}">`;
+                            html += '</div>'
+                            html += `<img style="max-width: 50vw" src="${imageUrl}">`;
+                            html += '</div>'
                         } else {
                             console.log('Failed to retrieve image URL.');
                         }
