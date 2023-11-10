@@ -110,7 +110,7 @@ fetchButton.addEventListener('click', () => {
     }
 
     // Construct the URL for fetching the story based on the input
-    const apiUrl = `http://localhost:8080/api/story?about=${encodeURIComponent(aboutValue)}`;
+    const apiUrl = `https://historygenerator.azurewebsites.net/api/story?about=${encodeURIComponent(aboutValue)}`;
 
     // Fetch the story from the API
     fetch(apiUrl)
@@ -195,7 +195,7 @@ fetchButton.addEventListener('click', () => {
         // Function to fetch an image URL based on a given prompt
         async function getImageUrl(prompt) {
             // URL for the image generation API
-            const baseUrl = 'http://localhost:8080/api/image/generateimage';
+            const baseUrl = 'https://historygenerator.azurewebsites.net/api/image/generateimage';
             const fullUrl = `${baseUrl}?prompt=${encodeURIComponent(prompt)}`;
 
             try {
