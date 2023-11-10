@@ -6,66 +6,137 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Title of the webpage -->
-    <title>The Enchanted Garden Story</title>
+    <title>Børne historie generator</title>
+    <style>
+          /* Style for the spinning element */
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #3498db;
+      border-top: 5px solid #e74c3c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite; /* Spinning animation */
+      display: none;
+    }
+
+    input {
+        width: 100px;
+        margin-right: 20px;
+    }
+    
+
+    body,html {
+        overflow-x: hidden;
+    }
+
+    /* Keyframes for the spinning animation */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    </style>
 </head>
 
 <body>
-    <!-- Main content -->
-    <h1>Generer historie!</h1>
+    
+<h1 style="text-align: center;">Børne historie generator med billeder!</h1>
+ <!-- Main content -->
+<div style="display: flex; max-width: 100vw; justify-content: center;" id="inputFields">
+ <!-- Input fields for user information -->
+ 
+ <label for="name">Name: </label>
+ <input type="text" id="name"><br>
 
-    <!-- Input for user to provide a parameter for story generation -->
-    <label for="about">About: </label>
-    <input type="text" id="about">
-    <!-- Button to initiate the story fetching process -->
-    <button id="fetchButton">Fetch Story</button>
-    <!-- Container for displaying the generated story -->
-    <div id="result"></div>
+ <label for="age">Age: </label>
+ <input type="text" id="age"><br>
+
+ <label for="interests">Interests: </label>
+ <input type="text" id="interests"><br>
+
+ <label for="friends">Friends: </label>
+ <input type="text" id="friends"><br>
+
+ <label for="parents">Parents: </label>
+ <input type="text" id="parents"><br>
+
+ <label for="extra">Extra: </label>
+ <input type="text" id="extra"><br>
+</div>
+
+ <!-- Button to initiate the story fetching process -->
+ <br>   
+ <div style="width: 100vw; display: flex; justify-content: center;">
+ <button style="padding: 10px; background: darkcyan; color: white;" id="fetchButton">GENERER HISTORIE</button></div>
+
+<br>
+<br>
+<div style="display: flex; justify-content: center; width: 100vw;">
+<div class="spinner"></div></div>
+ <!-- Container for displaying the generated story -->
+ <div id="result"></div>
+
 
     <script>
-        // Variable to store the fetched story text
-        let text = "";
+    
 
-        // DOM elements for interaction
-        const fetchButton = document.getElementById('fetchButton');
-        const aboutInput = document.getElementById('about');
-        const resultDiv = document.getElementById('result');
+     // Variable to store the fetched story text
+     let text = "";
+     let aboutValue=""   
 
-        // Event listener for the fetch button
-        fetchButton.addEventListener('click', () => {
-            // Get the value from the "about" input
-            const aboutValue = aboutInput.value;
+// DOM elements for interaction
+const fetchButton = document.getElementById('fetchButton');
+const resultDiv = document.getElementById('result');
 
-            // Check if a value is provided
-            if (!aboutValue) {
-                resultDiv.innerHTML = 'Please enter a value for the "about" parameter.';
-                return;
+// Event listener for the fetch button
+fetchButton.addEventListener('click', () => {
+    document.querySelector('.spinner').style.display = 'block';
+    // Get values from input fields
+    const name = document.getElementById('name').value;
+    const age = document.getElementById('age').value;
+    const interests = document.getElementById('interests').value;
+    const friends = document.getElementById('friends').value;
+    const parents = document.getElementById('parents').value;
+    const extra = document.getElementById('extra').value;
+
+    // Concatenate values into the 'about' parameter
+    const aboutValue = `Name: ${name}. Age: ${age}. Interests: ${interests}. Friends: ${friends}. Parents: ${parents}. Extra: ${extra}`;
+
+    console.log(aboutValue)
+
+    // Check if a value is provided
+    if (!aboutValue) {
+        resultDiv.innerHTML = 'Please enter values for the user information.';
+        return;
+    }
+
+    // Construct the URL for fetching the story based on the input
+    const apiUrl = `http://localhost:8080/api/story?about=${encodeURIComponent(aboutValue)}`;
+
+    // Fetch the story from the API
+    fetch(apiUrl)
+        .then(response => {
+            // Check if the network response is successful
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
             }
+            return response.text();
+        })
+        .then(data => {
+            // Store the fetched story text and generate the story
+            text = data;
+            generateStory();
+        })
 
-            // Construct the URL for fetching the story based on the input
-            const apiUrl = `http://localhost:8080/api/story?about=${aboutValue}`;
-
-            // Fetch the story from the API
-            fetch(apiUrl)
-                .then(response => {
-                    // Check if the network response is successful
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    // Store the fetched story text and generate the story
-                    text = data;
-                    generateStory();
-                })
-                .catch(error => {
-                    // Handle errors during the fetch process
-                    resultDiv.innerHTML = `Error: ${error.message}`;
-                });
+        
+        .catch(error => {
+            // Handle errors during the fetch process
+            resultDiv.innerHTML = `Error: ${error.message}`;
         });
+});
 
         // Function to generate the story HTML based on the fetched text
         async function generateStory() {
+
             // Split the story text into parts based on specific patterns
             const parts = text.split(/\s*(?=\[[^\]]*\])\s*/);
             let html = '';
@@ -96,14 +167,14 @@
                         html += `<h1 style="text-align: center;">${value}</h1>`;
                     } else if (key === 'CHAPTER-TEXT') {
                         // Add chapter text
-                        html += `<p style="font-size: 25px; font-weight: bold;">${value}</p>`;
+                        html += `<p style="font-size: 25px; font-weight: medium;">${value}</p>`;
                     } else if (key === 'CHAPTER-IMAGE-PROMPT') {
                         // Fetch and add an image based on the prompt
                         const imageUrl = await getImageUrl(value);
                         if (imageUrl) {
                             console.log('Image URL:', imageUrl);
                             html += '</div>'
-                            html += `<img style="max-width: 50vw" src="${imageUrl}">`;
+                            html += `<img style="max-width: 50vw; max-height: 100vh;" src="${imageUrl}">`;
                             html += '</div>'
                         } else {
                             console.log('Failed to retrieve image URL.');
@@ -111,7 +182,7 @@
                     }
                 }
             }
-
+            document.querySelector('.spinner').style.display = 'none';
             // Close the last chapter div if it exists
             if (currentChapter) {
                 html += '</div>';
